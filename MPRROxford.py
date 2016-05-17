@@ -1,0 +1,339 @@
+from __future__ import division
+import random , csv, funcionesExtras, itertools
+from psychopy import visual, gui,core, data,  event, logging, prefs
+from psychopy.hardware import joystick
+from scipy.spatial import distance
+from numpy import angle
+import math
+
+
+
+
+
+
+# el tiempo en segundos durante el que se escribe un valor en DAC1_REGISTER durante el cue 
+##  DESHABILITADO    tiempoEsperaU3Cue = 0.2
+
+
+# opacidades de solar_cell100_reg , solar_cell75_reg , solar_cell50_reg , solar_cell100_nreg , solar_cell75_nreg y solar_cell50_nreg
+
+
+
+opacidades = [0.9, 0.8 , 0.7 , 0.6 , 0.5, 0.4]
+
+
+
+
+# la celula solar se muestra solo 0.30 segundos
+timeInSecondsOfCueShown = 0.3
+
+
+# la aceleracion que se usa mas abajo para mover el Joystick
+
+
+
+# otros valores de otros screens
+cuetime = 1.5
+targetOnSet = 0.75
+interstimulusInterval = 4.0
+
+
+
+
+
+
+listNone = list(csv.reader(open('conditionsNone.csv',"rU")))[1:]
+listMedium = list(csv.reader(open('conditionsMedium.csv',"rU")))[1:]
+listHigh = list(csv.reader(open('conditionsHigh.csv',"rU")))[1:]
+
+listNone = listNone *3
+listMedium = listMedium * 2
+listHigh = listHigh *3
+
+
+lista = listHigh + listMedium + listNone
+
+listaFinal = [] 
+
+esPseudoRandom = False
+
+total = 2
+heTerminado = total
+
+while heTerminado > 0 :
+    
+    random.shuffle(lista)
+    listaFinal = listaFinal + lista
+    heTerminado = heTerminado - 1
+    
+
+
+
+bloque1 = listaFinal[0 : 71]
+bloque2 = listaFinal[72 : 143]
+bloque3 = listaFinal[144 : 215]
+bloque4 = listaFinal[216 : 287]
+
+
+listatypeTrial = [0,'U','NU']
+
+
+
+info = {'Session': 1, 'Subject':'', 'gender':['male','female']}
+dialog = gui.DlgFromDict(dictionary= info, title='MPRR with Joystick')
+
+
+if dialog.OK:
+    infoUser = dialog.data
+    #Subject's data is saved in infoUser and are ready to print them on each file
+else:
+    print('user cancelled')
+    core.quit()
+    
+
+#Date is saved on each trial
+
+info['dateStr'] = data.getDateStr()
+
+
+
+mywin = visual.Window([1366,768], fullscr = True, monitor='testMonitor', color='black',units='deg', allowGUI = False)
+respClock = core.Clock()
+
+
+joystick.backend='pyglet'
+nJoysticks=joystick.getNumJoysticks()
+
+if nJoysticks>0:
+    joy = joystick.Joystick(0)
+else:
+    print("You don't have a joystick connected!?")
+    mywin.close()
+    core.quit()
+
+
+#Date is saved on each trial
+
+info['dateStr'] = data.getDateStr()
+
+
+
+#We create a screen on which our program will run
+#We also set up the internal clock meanwhile the remaining functions are ready to use
+
+mywin = visual.Window([1366,768], fullscr = False, monitor='testMonitor', color='black',units='deg', allowGUI = False)
+respClock = core.Clock()
+
+
+joystick.backend='pyglet'
+nJoysticks=joystick.getNumJoysticks()
+
+if nJoysticks>0:
+    joy = joystick.Joystick(0)
+else:
+    print("You don't have a joystick connected!?")
+    mywin.close()
+    core.quit()
+    
+
+
+
+solar_cellFixation = visual.Circle(mywin, radius=0.5, edges=30, lineColor = 'white',fillColor = 'white', opacity = 1, pos=[14,-7.5], interpolate= True)
+
+solar_cellHigh_reg = visual.Circle(mywin, radius=0.5, edges=30, fillColor = 'white', opacity = opacidades[0], pos=[14,-7.5], interpolate= True)
+solar_cellHigh_nreg = visual.Circle(mywin, radius=0.5, edges=30, fillColor = 'white', opacity = opacidades[3], pos=[14,-7.5], interpolate= True)
+
+solar_cellMedium_reg = visual.Circle(mywin, radius=0.5, edges=30, fillColor = 'white', opacity = opacidades[1], pos=[14,-7.5], interpolate= True)
+solar_cellMedium_nreg = visual.Circle(mywin, radius=0.5, edges=30, fillColor = 'white', opacity = opacidades[4], pos=[14,-7.5], interpolate= True)
+
+solar_cellNoCert_reg = visual.Circle(mywin, radius=0.5, edges=30, fillColor = 'white', opacity = opacidades[2], pos=[14,-7.5], interpolate= True)
+solar_cellNoCert_nreg = visual.Circle(mywin, radius=0.5, edges=30, fillColor = 'white', opacity = opacidades[5], pos=[14,-7.5], interpolate= True)
+
+#preparamos la celula del punto de fijacion, de color blanco, y la cruz del punto de fijacion
+black_solarCell = visual.Circle(mywin, radius= 0.6, edges=30, lineColor = 'black',fillColor = 'black', pos=[14,-7.5], interpolate= True) 
+
+
+
+#declaramos el resto de items, los circulos superiores de espera, y el rojo inferior
+
+redJoystickButton = visual.Circle(mywin, radius=0.3, edges=30, lineColor = 'red', fillColor = 'red', pos=(0, 0), interpolate=True)
+
+CueBlackCircle = visual.Circle(mywin, radius=0.5, edges=30, lineColor = 'white', fillColor = 'black', pos=(0, 0), interpolate=True)
+
+# no le ponemos direccion, antes de pintarlo se la pondremos, pero eso es mas adelante
+targetWhiteCircle = visual.Circle(mywin, radius=0.5, edges=30,lineColor = 'white', fillColor = 'white', interpolate=True)
+
+targetFinal = visual.Circle(mywin, radius=0.5, edges=30,lineColor = 'white', fillColor = 'white', interpolate=True)
+
+
+
+celulasCue = [solar_cellHigh_reg ,solar_cellHigh_nreg , solar_cellMedium_reg , solar_cellMedium_nreg , solar_cellNoCert_reg , solar_cellNoCert_nreg]
+
+listaCues = [0.35,0.75,0.40,0.80,0.45,0.85]
+
+
+filename = 'data/'+str(info['gender'])+'_'+str(info['Subject'])+'_'+str(info['Session'])
+
+
+exp = data.ExperimentHandler(name='MprrSubject',
+                version='0.1',
+                extraInfo=info,
+                runtimeInfo=None,
+                originPath=None,
+                savePickle=True,
+                saveWideText=True,
+                dataFileName=filename)
+               
+
+
+numeroReps = len(listaFinal)
+
+training = data.TrialHandler(trialList=[], nReps=numeroReps, name='train', method='sequential')
+
+#unimos con nuestro experimento los trials, de manera secuencial (definido arriba en el method), en forma de bucle
+exp.addLoop(training)
+
+
+voyPor = 0
+
+#para cada vez que hemos escrito en nuestro numero de trials
+for trial in training:
+    
+    if voyPor % 72 == 0 :
+        
+        bloque = str(voyPor / 72)
+        
+        texto = 'Block  : ' + bloque + ' is going to start, press space to continue'
+        continuar = 0
+        
+        while continuar == 0  :
+            stim = visual.TextStim(mywin, texto)
+            stim.draw()
+            mywin.flip()
+            if 'space' in event.getKeys():
+                continuar = 1
+            
+            
+            event.clearEvents()
+        
+    voyPor = voyPor + 1
+        
+        
+        
+    
+    listatypeTrial = funcionesExtras.testPseudoRandom(listatypeTrial)
+    
+    typeTrial = listatypeTrial[0]
+    elem = listaFinal[voyPor]
+    
+    #print('tipo de trial : ',typeTrial)
+    listaTargets = funcionesExtras.obtenerposicionesTarget(elem)
+
+    
+    training.addData('elemento', elem)
+    
+    #print('elemento', elem)
+    
+    #declaramos el SOA, un intervalo de tiempo entre 1 y 2 segundos que usaremos para la pantalla de fixation
+    timeFixation = random.uniform(1,2)
+    
+    # redondeamos el SOA a un solo decimal, y colocamos el valor en el fichero de salida
+    soa=round(timeFixation,1)
+    training.addData('soa',soa)
+    
+    redJoystickButton.setPos((0, 0))
+    respClock = core.Clock()
+    
+        # soa esta entre 1 y 2
+    
+    while respClock.getTime() < soa:
+        
+        solar_cellFixation.draw()
+        targetWhiteCircle.draw()
+        redJoystickButton.draw()
+        #timeInSecondsOfCueShown es el tiempo de espera hasta ocultar el solarCell
+        if respClock.getTime()< timeInSecondsOfCueShown:
+            #miu3.writeRegister(DAC1_REGISTER, 0.1)
+            res = 1
+        else:
+            #miu3.writeRegister(DAC1_REGISTER, 0)
+            black_solarCell.draw()
+        mywin.flip()
+        
+    #print (elem)
+    #second target 
+    
+    respClock = core.Clock()
+    while respClock.getTime() < cuetime:
+        
+        for i in listaTargets:
+            CueBlackCircle.pos = i
+            CueBlackCircle.draw()
+        targetWhiteCircle.draw()
+        redJoystickButton.draw()
+        mywin.flip()
+        
+    respClock = core.Clock()
+    
+    
+    isMax = 0
+    
+    while respClock.getTime() < targetOnSet :
+        xx = joy.getX()
+        yy = joy.getY()
+        
+        nuevoX = 1* xx  # si avanzamos a la derecha, se incrementa el vector direccion X
+        nuevoY = - 1* yy # el eje Y esta invertido en los joystick, si vamos hacia arriba, se decrementa el vector direccion Y
+        
+        distancia = distance.euclidean([nuevoX,nuevoY],[0,0])
+        
+        
+        distances = [distance.euclidean(x,[0,0]) for x in listaTargets]
+        
+        #print distances
+        
+        for i in listaTargets:
+            CueBlackCircle.pos = i
+            CueBlackCircle.draw()
+        targetWhiteCircle.draw()
+        targetFinal.pos = listaTargets[int(elem[2])]
+        targetFinal.draw()
+        redJoystickButton.draw()
+        
+        
+        if distancia < 0.01 :
+            isMax = 0
+            nuevoX = 0
+            nuevoY = 0
+            redJoystickButton.setPos((nuevoX, nuevoY))
+            redJoystickButton.draw()
+        if isMax == 0 and distancia > 0.6 :
+            isMax = 1
+            theta = angle( nuevoX+nuevoY*1j )
+            nuevoXMax = math.cos(theta)*5
+            nuevoYMax = math.sin(theta)*5
+            redJoystickButton.setPos((nuevoXMax, nuevoYMax))
+            redJoystickButton.draw()
+            
+        if isMax ==1 :
+            redJoystickButton.setPos((nuevoXMax, nuevoYMax))
+            redJoystickButton.draw()
+            
+        
+        mywin.flip()
+        
+    respClock = core.Clock()
+    while respClock.getTime() < interstimulusInterval :
+        
+        if 'q' in event.getKeys():
+            core.quit()
+        mywin.flip()
+    
+    event.clearEvents()
+    exp.nextEntry()
+
+# una vez terminado, imprimimos por la pantalla del psychopy nuestras variables de salida
+for e in exp.entries:
+    print(e)
+    
+print("Done. We will save data to a csv file")

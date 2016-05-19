@@ -5,6 +5,7 @@ from psychopy.hardware import joystick
 from scipy.spatial import distance
 from numpy import angle
 import math
+from labjack import u3
 
 
 
@@ -12,23 +13,38 @@ import math
 
 
 # el tiempo en segundos durante el que se escribe un valor en DAC1_REGISTER durante el cue 
-##  DESHABILITADO    tiempoEsperaU3Cue = 0.2
 
+tiempoEsperaU3Cue = 0.2
+
+timeInSecondsOfCueShown = 0.3
 
 # opacidades de solar_cell100_reg , solar_cell75_reg , solar_cell50_reg , solar_cell100_nreg , solar_cell75_nreg y solar_cell50_nreg
 
 
+# valor entre 0 y 1 
+# indica la inclinacion del joystick para poder tener movimiento (sensibilidad)
+inclinacionJoy = 0.6
 
 opacidades = [0.9, 0.8 , 0.7 , 0.6 , 0.5, 0.4]
 
+intensitylabJackUniform = [0.15, 0.20, 0.25]
+
+intensitylabJackNonUniform = [0.50, 0.55,0.60]
 
 
-
-# la celula solar se muestra solo 0.30 segundos
-timeInSecondsOfCueShown = 0.3
 
 
 # la aceleracion que se usa mas abajo para mover el Joystick
+
+
+miu3 = u3.U3()
+miu3.getCalibrationData
+
+DAC1_REGISTER = 5002
+miu3.writeRegister(DAC1_REGISTER,0)
+
+miu3.writeRegister(DAC1_REGISTER, 0)
+
 
 
 
@@ -97,27 +113,6 @@ info['dateStr'] = data.getDateStr()
 
 
 
-mywin = visual.Window([1366,768], fullscr = True, monitor='testMonitor', color='black',units='deg', allowGUI = False)
-respClock = core.Clock()
-
-
-joystick.backend='pyglet'
-nJoysticks=joystick.getNumJoysticks()
-
-if nJoysticks>0:
-    joy = joystick.Joystick(0)
-else:
-    print("You don't have a joystick connected!?")
-    mywin.close()
-    core.quit()
-
-
-#Date is saved on each trial
-
-info['dateStr'] = data.getDateStr()
-
-
-
 #We create a screen on which our program will run
 #We also set up the internal clock meanwhile the remaining functions are ready to use
 
@@ -138,26 +133,31 @@ else:
 
 
 
-solar_cellFixation = visual.Circle(mywin, radius=0.5, edges=30, lineColor = 'white',fillColor = 'white', opacity = 1, pos=[14,-7.5], interpolate= True)
+solar_cellFixation = visual.Circle(mywin, radius=0.5, edges=30, lineColor = 'white',fillColor = 'white', opacity = 1, pos=[-14,7.5], interpolate= True)
 
-solar_cellHigh_reg = visual.Circle(mywin, radius=0.5, edges=30, fillColor = 'white', opacity = opacidades[0], pos=[14,-7.5], interpolate= True)
-solar_cellHigh_nreg = visual.Circle(mywin, radius=0.5, edges=30, fillColor = 'white', opacity = opacidades[3], pos=[14,-7.5], interpolate= True)
+solar_cellHigh_reg = visual.Circle(mywin, radius=0.5, edges=30, fillColor = 'white', opacity = opacidades[0], pos=[-14,7.5], interpolate= True)
+solar_cellHigh_nreg = visual.Circle(mywin, radius=0.5, edges=30, fillColor = 'white', opacity = opacidades[3], pos=[-14,7.5], interpolate= True)
 
-solar_cellMedium_reg = visual.Circle(mywin, radius=0.5, edges=30, fillColor = 'white', opacity = opacidades[1], pos=[14,-7.5], interpolate= True)
-solar_cellMedium_nreg = visual.Circle(mywin, radius=0.5, edges=30, fillColor = 'white', opacity = opacidades[4], pos=[14,-7.5], interpolate= True)
+solar_cellMedium_reg = visual.Circle(mywin, radius=0.5, edges=30, fillColor = 'white', opacity = opacidades[1], pos=[-14,7.5], interpolate= True)
+solar_cellMedium_nreg = visual.Circle(mywin, radius=0.5, edges=30, fillColor = 'white', opacity = opacidades[4], pos=[-14,7.5], interpolate= True)
 
-solar_cellNoCert_reg = visual.Circle(mywin, radius=0.5, edges=30, fillColor = 'white', opacity = opacidades[2], pos=[14,-7.5], interpolate= True)
-solar_cellNoCert_nreg = visual.Circle(mywin, radius=0.5, edges=30, fillColor = 'white', opacity = opacidades[5], pos=[14,-7.5], interpolate= True)
+solar_cellNoCert_reg = visual.Circle(mywin, radius=0.5, edges=30, fillColor = 'white', opacity = opacidades[2], pos=[-14,7.5], interpolate= True)
+solar_cellNoCert_nreg = visual.Circle(mywin, radius=0.5, edges=30, fillColor = 'white', opacity = opacidades[5], pos=[-14,7.5], interpolate= True)
 
 #preparamos la celula del punto de fijacion, de color blanco, y la cruz del punto de fijacion
-black_solarCell = visual.Circle(mywin, radius= 0.6, edges=30, lineColor = 'black',fillColor = 'black', pos=[14,-7.5], interpolate= True) 
+black_solarCell = visual.Circle(mywin, radius= 0.6, edges=30, lineColor = 'black',fillColor = 'black', pos=[-14,7.5], interpolate= True) 
 
+
+cellsreg = [solar_cellHigh_reg,solar_cellMedium_reg,solar_cellNoCert_reg]
+cellsNreg = [solar_cellHigh_nreg,solar_cellMedium_nreg,solar_cellNoCert_nreg]
 
 
 #declaramos el resto de items, los circulos superiores de espera, y el rojo inferior
 
 redJoystickButton = visual.Circle(mywin, radius=0.3, edges=30, lineColor = 'red', fillColor = 'red', pos=(0, 0), interpolate=True)
 
+CueBlackCircle = visual.Circle(mywin, radius=0.5, edges=30, lineColor = 'white', fillColor = 'black', pos=(0, 0), interpolate=True)
+CueBlackCircle = visual.Circle(mywin, radius=0.5, edges=30, lineColor = 'white', fillColor = 'black', pos=(0, 0), interpolate=True)
 CueBlackCircle = visual.Circle(mywin, radius=0.5, edges=30, lineColor = 'white', fillColor = 'black', pos=(0, 0), interpolate=True)
 
 # no le ponemos direccion, antes de pintarlo se la pondremos, pero eso es mas adelante
@@ -166,10 +166,6 @@ targetWhiteCircle = visual.Circle(mywin, radius=0.5, edges=30,lineColor = 'white
 targetFinal = visual.Circle(mywin, radius=0.5, edges=30,lineColor = 'white', fillColor = 'white', interpolate=True)
 
 
-
-celulasCue = [solar_cellHigh_reg ,solar_cellHigh_nreg , solar_cellMedium_reg , solar_cellMedium_nreg , solar_cellNoCert_reg , solar_cellNoCert_nreg]
-
-listaCues = [0.35,0.75,0.40,0.80,0.45,0.85]
 
 
 filename = 'data/'+str(info['gender'])+'_'+str(info['Subject'])+'_'+str(info['Session'])
@@ -201,9 +197,9 @@ for trial in training:
     
     if voyPor % 72 == 0 :
         
-        bloque = str(voyPor / 72)
+        bloque = str((voyPor // 72) + 1)
         
-        texto = 'Block  : ' + bloque + ' is going to start, press space to continue'
+        texto = 'Block  ' + bloque + ' is going to start, press space to continue'
         continuar = 0
         
         while continuar == 0  :
@@ -226,13 +222,34 @@ for trial in training:
     typeTrial = listatypeTrial[0]
     elem = listaFinal[voyPor]
     
+    
+    if typeTrial == 'U' :
+        myList = intensitylabJackUniform
+        myCells = cellsreg
+    else :
+        myList = intensitylabJackNonUniform
+        myCells = cellsNreg
+    
+    
+    if elem[0] == 'H' :
+        valU3 = myList[0]
+        cell = myCells[0]
+    if elem[0] == 'M' :
+        valU3 = myList[1]
+        cell = myCells[1]
+    if elem[0] == 'N' :
+        valU3 = myList[2]
+        cell = myCells[2]
+        
+    training.addData('Labjack_U3',valU3)
+    training.addData('cellIntensity',cell.opacity)
     #print('tipo de trial : ',typeTrial)
     listaTargets = funcionesExtras.obtenerposicionesTarget(elem)
 
-    
-    training.addData('elemento', elem)
-    
-    #print('elemento', elem)
+    training.addData('typeTrial',typeTrial)
+    training.addData('Unceartinty type', elem[0])
+    training.addData('sector', elem[1])
+    training.addData('position', elem[2] )
     
     #declaramos el SOA, un intervalo de tiempo entre 1 y 2 segundos que usaremos para la pantalla de fixation
     timeFixation = random.uniform(1,2)
@@ -252,11 +269,8 @@ for trial in training:
         targetWhiteCircle.draw()
         redJoystickButton.draw()
         #timeInSecondsOfCueShown es el tiempo de espera hasta ocultar el solarCell
-        if respClock.getTime()< timeInSecondsOfCueShown:
-            #miu3.writeRegister(DAC1_REGISTER, 0.1)
-            res = 1
-        else:
-            #miu3.writeRegister(DAC1_REGISTER, 0)
+        
+        if respClock.getTime()> timeInSecondsOfCueShown:
             black_solarCell.draw()
         mywin.flip()
         
@@ -266,6 +280,14 @@ for trial in training:
     respClock = core.Clock()
     while respClock.getTime() < cuetime:
         
+        if respClock.getTime() < tiempoEsperaU3Cue :
+           miu3.writeRegister(DAC1_REGISTER, valU3)
+        else :
+            miu3.writeRegister(DAC1_REGISTER, 0)
+        
+        cell.draw()
+        if respClock.getTime() > timeInSecondsOfCueShown:
+            black_solarCell.draw()
         for i in listaTargets:
             CueBlackCircle.pos = i
             CueBlackCircle.draw()
@@ -273,14 +295,35 @@ for trial in training:
         redJoystickButton.draw()
         mywin.flip()
         
-    respClock = core.Clock()
-    
     
     isMax = 0
     
+    nuevoXMax = 0.0
+    nuevoYMax = 0.0
+    
+    reactionTime = 0
+    respClock = core.Clock()
+    #print(reactionTime)
+    
+    #print(elem)
     while respClock.getTime() < targetOnSet :
+        
+        
+        cell.draw()
+        if respClock.getTime() > timeInSecondsOfCueShown:
+            black_solarCell.draw()
+        
         xx = joy.getX()
         yy = joy.getY()
+        
+        
+        if reactionTime == 0 :
+            if abs(xx) > 0.01 or abs(yy) > 0.01 :
+                
+                reactionTime = respClock.getTime()
+                
+            
+        
         
         nuevoX = 1* xx  # si avanzamos a la derecha, se incrementa el vector direccion X
         nuevoY = - 1* yy # el eje Y esta invertido en los joystick, si vamos hacia arriba, se decrementa el vector direccion Y
@@ -295,9 +338,10 @@ for trial in training:
         for i in listaTargets:
             CueBlackCircle.pos = i
             CueBlackCircle.draw()
-        targetWhiteCircle.draw()
         targetFinal.pos = listaTargets[int(elem[2])]
         targetFinal.draw()
+        
+        
         redJoystickButton.draw()
         
         
@@ -307,7 +351,7 @@ for trial in training:
             nuevoY = 0
             redJoystickButton.setPos((nuevoX, nuevoY))
             redJoystickButton.draw()
-        if isMax == 0 and distancia > 0.6 :
+        if isMax == 0 and distancia > inclinacionJoy :
             isMax = 1
             theta = angle( nuevoX+nuevoY*1j )
             nuevoXMax = math.cos(theta)*5
@@ -321,8 +365,15 @@ for trial in training:
             
         
         mywin.flip()
-        
+    
+    if reactionTime == 0 :
+        reactionTime = 0.750
+    training.addData('reactionTime',round(reactionTime,3))
     respClock = core.Clock()
+    
+    joyFinalPos = (round(nuevoXMax,2), round(nuevoYMax,2))
+    training.addData('joyFinalPos',joyFinalPos)
+    training.addData('TargetFinalPosition',listaTargets[int(elem[2])])
     while respClock.getTime() < interstimulusInterval :
         
         if 'q' in event.getKeys():

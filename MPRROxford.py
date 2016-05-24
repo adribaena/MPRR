@@ -25,11 +25,24 @@ timeInSecondsOfCueShown = 0.3
 # indica la inclinacion del joystick para poder tener movimiento (sensibilidad)
 inclinacionJoy = 0.6
 
-opacidades = [0.9, 0.8 , 0.7 , 0.6 , 0.5, 0.4]
 
-intensitylabJackUniform = [0.15, 0.20, 0.25]
 
-intensitylabJackNonUniform = [0.50, 0.55,0.60]
+opacidades = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 0.9, 1]
+
+
+intensityLabjackFix = 0.1
+
+intensitylabJackUniform = [0.45, 0.40, 0.35]
+
+intensitylabJackNonUniform = [0.85, 0.80,0.75]
+
+
+
+
+
+intensityU3TargetUniform =[1.3,1.25 ,1.2]
+intensityU3TargetNoUniform = [1.7, 1.65 , 1.6]
+
 
 
 
@@ -43,7 +56,7 @@ miu3.getCalibrationData
 DAC1_REGISTER = 5002
 miu3.writeRegister(DAC1_REGISTER,0)
 
-miu3.writeRegister(DAC1_REGISTER, 0)
+#miu3.writeRegister(DAC1_REGISTER, 0)
 
 
 
@@ -67,13 +80,12 @@ listMedium = listMedium * 2
 listHigh = listHigh *3
 
 
-lista = listHigh + listMedium + listNone
+lista = listNone + listMedium + listHigh
 
 listaFinal = [] 
 
-esPseudoRandom = False
 
-total = 2
+total = 4
 heTerminado = total
 
 while heTerminado > 0 :
@@ -89,7 +101,6 @@ bloque1 = listaFinal[0 : 71]
 bloque2 = listaFinal[72 : 143]
 bloque3 = listaFinal[144 : 215]
 bloque4 = listaFinal[216 : 287]
-
 
 listatypeTrial = [0,'U','NU']
 
@@ -133,17 +144,24 @@ else:
 
 
 
-solar_cellFixation = visual.Circle(mywin, radius=0.5, edges=30, lineColor = 'white',fillColor = 'white', opacity = 1, pos=[-14,7.5], interpolate= True)
+solar_cellFixation = visual.Circle(mywin, radius=0.5, edges=30, fillColor = 'white', opacity = opacidades[0], pos=[-14,7.5], interpolate= True)
 
-solar_cellHigh_reg = visual.Circle(mywin, radius=0.5, edges=30, fillColor = 'white', opacity = opacidades[0], pos=[-14,7.5], interpolate= True)
-solar_cellHigh_nreg = visual.Circle(mywin, radius=0.5, edges=30, fillColor = 'white', opacity = opacidades[3], pos=[-14,7.5], interpolate= True)
+solar_cellHigh_reg = visual.Circle(mywin, radius=0.5, edges=30, fillColor = 'white', opacity = opacidades[3], pos=[-14,7.5], interpolate= True)
+solar_cellHigh_nreg = visual.Circle(mywin, radius=0.5, edges=30, fillColor = 'white', opacity = opacidades[6], pos=[-14,7.5], interpolate= True)
 
-solar_cellMedium_reg = visual.Circle(mywin, radius=0.5, edges=30, fillColor = 'white', opacity = opacidades[1], pos=[-14,7.5], interpolate= True)
-solar_cellMedium_nreg = visual.Circle(mywin, radius=0.5, edges=30, fillColor = 'white', opacity = opacidades[4], pos=[-14,7.5], interpolate= True)
 
-solar_cellNoCert_reg = visual.Circle(mywin, radius=0.5, edges=30, fillColor = 'white', opacity = opacidades[2], pos=[-14,7.5], interpolate= True)
-solar_cellNoCert_nreg = visual.Circle(mywin, radius=0.5, edges=30, fillColor = 'white', opacity = opacidades[5], pos=[-14,7.5], interpolate= True)
+solar_cellCueRegular = visual.Circle(mywin, radius=0.5, edges=30, fillColor = 'white', opacity = opacidades[1], pos=[-14,7.5], interpolate= True)
+solar_cellCueNoRegular = visual.Circle(mywin, radius=0.5, edges=30, fillColor = 'white', opacity = opacidades[2], pos=[-14,7.5], interpolate= True)
 
+
+
+solar_cellMedium_reg = visual.Circle(mywin, radius=0.5, edges=30, fillColor = 'white', opacity = opacidades[4], pos=[-14,7.5], interpolate= True)
+solar_cellMedium_nreg = visual.Circle(mywin, radius=0.5, edges=30, fillColor = 'white', opacity = opacidades[7], pos=[-14,7.5], interpolate= True)
+
+solar_cellNoCert_reg = visual.Circle(mywin, radius=0.5, edges=30, fillColor = 'white', opacity = opacidades[5], pos=[-14,7.5], interpolate= True)
+solar_cellNoCert_nreg = visual.Circle(mywin, radius=0.5, edges=30, fillColor = 'white', opacity = opacidades[8], pos=[-14,7.5], interpolate= True)
+
+#solar_celltarget = visual.Circle(mywin, radius=0.5, edges=30, lineColor = 'white',fillColor = 'white', opacity = opacidades[7], pos=[-14,7.5], interpolate= True)
 #preparamos la celula del punto de fijacion, de color blanco, y la cruz del punto de fijacion
 black_solarCell = visual.Circle(mywin, radius= 0.6, edges=30, lineColor = 'black',fillColor = 'black', pos=[-14,7.5], interpolate= True) 
 
@@ -226,20 +244,27 @@ for trial in training:
     if typeTrial == 'U' :
         myList = intensitylabJackUniform
         myCells = cellsreg
+        solarCue = solar_cellCueNoRegular
+        listU3Target = intensityU3TargetUniform
     else :
         myList = intensitylabJackNonUniform
         myCells = cellsNreg
+        solarCue = solar_cellCueRegular
+        listU3Target = intensityU3TargetNoUniform
     
     
     if elem[0] == 'H' :
         valU3 = myList[0]
         cell = myCells[0]
+        u3TargetVolts = listU3Target[0]
     if elem[0] == 'M' :
         valU3 = myList[1]
         cell = myCells[1]
+        u3TargetVolts = listU3Target[1]
     if elem[0] == 'N' :
         valU3 = myList[2]
         cell = myCells[2]
+        u3TargetVolts = listU3Target[2]
         
     training.addData('Labjack_U3',valU3)
     training.addData('cellIntensity',cell.opacity)
@@ -264,7 +289,12 @@ for trial in training:
         # soa esta entre 1 y 2
     
     while respClock.getTime() < soa:
-        
+
+        if respClock.getTime() < tiempoEsperaU3Cue :
+            miu3.writeRegister(DAC1_REGISTER, intensityLabjackFix)
+        else :
+            miu3.writeRegister(DAC1_REGISTER, 0)
+                
         solar_cellFixation.draw()
         targetWhiteCircle.draw()
         redJoystickButton.draw()
@@ -281,11 +311,11 @@ for trial in training:
     while respClock.getTime() < cuetime:
         
         if respClock.getTime() < tiempoEsperaU3Cue :
-           miu3.writeRegister(DAC1_REGISTER, valU3)
+            miu3.writeRegister(DAC1_REGISTER, valU3)
         else :
             miu3.writeRegister(DAC1_REGISTER, 0)
         
-        cell.draw()
+        solarCue.draw()
         if respClock.getTime() > timeInSecondsOfCueShown:
             black_solarCell.draw()
         for i in listaTargets:
@@ -308,6 +338,11 @@ for trial in training:
     #print(elem)
     while respClock.getTime() < targetOnSet :
         
+        if respClock.getTime() < tiempoEsperaU3Cue :
+            miu3.writeRegister(DAC1_REGISTER, u3TargetVolts)
+        else :
+            miu3.writeRegister(DAC1_REGISTER, 0)
+
         
         cell.draw()
         if respClock.getTime() > timeInSecondsOfCueShown:
@@ -333,12 +368,19 @@ for trial in training:
         
         distances = [distance.euclidean(x,[0,0]) for x in listaTargets]
         
-        #print distances
+        print(listaTargets)
+        
         
         for i in listaTargets:
             CueBlackCircle.pos = i
             CueBlackCircle.draw()
-        targetFinal.pos = listaTargets[int(elem[2])]
+        print(elem)
+        if elem[0] == 'N':
+            targetFinal.pos = listaTargets[0]
+            itemtoAddFinal = listaTargets[0]
+        else :
+            targetFinal.pos = listaTargets[int(elem[2])]
+            itemtoAddFinal = listaTargets[int(elem[2])]
         targetFinal.draw()
         
         
@@ -373,7 +415,7 @@ for trial in training:
     
     joyFinalPos = (round(nuevoXMax,2), round(nuevoYMax,2))
     training.addData('joyFinalPos',joyFinalPos)
-    training.addData('TargetFinalPosition',listaTargets[int(elem[2])])
+    training.addData('TargetFinalPosition',itemtoAddFinal)
     while respClock.getTime() < interstimulusInterval :
         
         if 'q' in event.getKeys():

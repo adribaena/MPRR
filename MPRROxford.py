@@ -472,7 +472,7 @@ for trial in training:
     training.addData('angleInDegrees',angD)
     
     
-    #aquí debemos escribir ang en la u3
+    #aqui debemos escribir ang en la u3
     
     cont = 0
     respClock= core.Clock()

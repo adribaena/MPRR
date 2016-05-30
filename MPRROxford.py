@@ -6,6 +6,7 @@ from scipy.spatial import distance
 from numpy import angle
 import math
 from labjack import u3
+import numpy as np
 
 
 
@@ -36,7 +37,8 @@ intensitylabJackUniform = [0.45, 0.40, 0.35]
 
 intensitylabJackNonUniform = [0.85, 0.80,0.75]
 
-
+#define the number of pieces
+numCircles = 20;
 
 
 
@@ -65,6 +67,45 @@ miu3.writeRegister(DAC1_REGISTER,0)
 cuetime = 1.5
 targetOnSet = 0.75
 interstimulusInterval = 4.0
+
+
+
+
+
+
+#define the angles of the pieces
+lista = [round(360*random.random(),4) for i in xrange(numCircles)]
+
+
+x = [0] * numCircles
+y = [0] * numCircles
+
+
+
+# define x and y as the movement distance of the pieces
+
+for i in range(len(lista)):
+    x[i]= np.cos(math.radians(lista[i]))*2
+    y[i]=np.sin(math.radians(lista[i]))*2
+
+
+
+#define the movement vector of every circle
+listMoves = [0] * 20
+elemental = 0
+while elemental < 20 :
+    listMoves[elemental] = elemental*0.15
+    elemental = elemental + 1
+
+
+clock = core.Clock()
+#declare cont for every movement piece
+
+
+
+
+
+
 
 
 
@@ -209,9 +250,21 @@ exp.addLoop(training)
 
 
 voyPor = 0
+pausa = 0
 
 #para cada vez que hemos escrito en nuestro numero de trials
 for trial in training:
+    
+    while pausa == 1:
+        text = 'Paused, press p to Continue'
+        stimP = visual.TextStim(mywin, text)
+        stimP.draw()
+        mywin.flip()
+        if 'p' in event.getKeys():
+            pausa = 0
+        event.clearEvents()
+        
+        
     
     if voyPor % 72 == 0 :
         
@@ -226,8 +279,6 @@ for trial in training:
             mywin.flip()
             if 'space' in event.getKeys():
                 continuar = 1
-            
-            
             event.clearEvents()
         
     voyPor = voyPor + 1
@@ -342,7 +393,6 @@ for trial in training:
             miu3.writeRegister(DAC1_REGISTER, u3TargetVolts)
         else :
             miu3.writeRegister(DAC1_REGISTER, 0)
-
         
         cell.draw()
         if respClock.getTime() > timeInSecondsOfCueShown:
@@ -366,15 +416,13 @@ for trial in training:
         distancia = distance.euclidean([nuevoX,nuevoY],[0,0])
         
         
-        distances = [distance.euclidean(x,[0,0]) for x in listaTargets]
+        distances = [distance.euclidean(lx,[0,0]) for lx in listaTargets]
         
-        print(listaTargets)
         
         
         for i in listaTargets:
             CueBlackCircle.pos = i
             CueBlackCircle.draw()
-        print(elem)
         if elem[0] == 'N':
             targetFinal.pos = listaTargets[0]
             itemtoAddFinal = listaTargets[0]
@@ -416,11 +464,60 @@ for trial in training:
     joyFinalPos = (round(nuevoXMax,2), round(nuevoYMax,2))
     training.addData('joyFinalPos',joyFinalPos)
     training.addData('TargetFinalPosition',itemtoAddFinal)
+    
+    ang = funcionesExtras.angleInRads(itemtoAddFinal, joyFinalPos)
+    angD = funcionesExtras.angleInDegrees(itemtoAddFinal, joyFinalPos)
+    
+    training.addData('angleInRads',ang)
+    training.addData('angleInDegrees',angD)
+    
+    
+    #aquí debemos escribir ang en la u3
+    
+    cont = 0
+    respClock= core.Clock()
+    
     while respClock.getTime() < interstimulusInterval :
+        if angD < 10 :
+            while cont < 20:
+                for item in range(numCircles):
+                    circle = visual.Circle(mywin, radius=0.20, edges=10, fillColor = 'white', pos=[itemtoAddFinal[0] + x[item]*listMoves[cont],itemtoAddFinal[1] + y[item]*listMoves[cont]], interpolate= True)
+                    circle.draw()
+                cont = cont+1
+                mywin.flip()
         
+
+        if 'p' in event.getKeys():
+            pausa = 1
+            event.clearEvents()
+        if pausa == 1:
+            tr = str(voyPor + 1 )
+            texto = 'trial  ' + tr + ' will be paused'
+            stimP = visual.TextStim(mywin, texto)
+            stimP.draw()
+            mywin.flip()
         if 'q' in event.getKeys():
             core.quit()
+        if angD < 10 :
+            if cont == 20:
+                mywin.flip()
+                lista = [round(360*random.random(),4) for i in xrange(numCircles)]
+                x = [0] * numCircles
+                y = [0] * numCircles
+                for i in range(len(lista)):
+                    x[i]= np.cos(math.radians(lista[i]))*2
+                    y[i]= np.sin(math.radians(lista[i]))*2
+                listMoves = [0] * 20
+                elemental = 0
+                while elemental < 20 :
+                    listMoves[elemental] = elemental*0.15
+                    elemental = elemental + 1
+                cont = cont + 1
+            
+            
         mywin.flip()
+        
+        
     
     event.clearEvents()
     exp.nextEntry()

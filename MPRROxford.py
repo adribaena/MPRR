@@ -475,7 +475,7 @@ for trial in training:
     if ang > 0 and ang <=0.05:
         ang = 0.05
     
-    #aqui debemos escribir ang en la u3
+    #aqui debemos escribir ang en la u3 que vale 0 si no se ha movido joy y 0.05 a 3.14 si se tiene algo de error
     
     
     cont = 0

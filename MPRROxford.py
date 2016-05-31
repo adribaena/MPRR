@@ -7,7 +7,7 @@ from numpy import angle
 import math
 from labjack import u3
 import numpy as np
-
+import time
 
 
 
@@ -38,7 +38,7 @@ intensitylabJackUniform = [0.45, 0.40, 0.35]
 intensitylabJackNonUniform = [0.85, 0.80,0.75]
 
 #define the number of pieces
-numCircles = 20;
+numCircles = 5;
 
 
 
@@ -58,7 +58,8 @@ miu3.getCalibrationData
 DAC1_REGISTER = 5002
 miu3.writeRegister(DAC1_REGISTER,0)
 
-#miu3.writeRegister(DAC1_REGISTER, 0)
+DAC0_REGISTER = 5000
+miu3.writeRegister(DAC0_REGISTER, 0)
 
 
 
@@ -94,7 +95,7 @@ for i in range(len(lista)):
 listMoves = [0] * 20
 elemental = 0
 while elemental < 20 :
-    listMoves[elemental] = elemental*0.15
+    listMoves[elemental] = elemental*0.3
     elemental = elemental + 1
 
 
@@ -102,11 +103,11 @@ clock = core.Clock()
 #declare cont for every movement piece
 
 
+listaIntensities = np.linspace(0.04, 2.0, num=181)
 
 
 
-
-
+globalTime = core.Clock()
 
 
 
@@ -123,7 +124,7 @@ listHigh = listHigh *3
 
 lista = listNone + listMedium + listHigh
 
-listaFinal = [] 
+listaFinal = []
 
 
 total = 4
@@ -326,6 +327,8 @@ for trial in training:
     training.addData('Unceartinty type', elem[0])
     training.addData('sector', elem[1])
     training.addData('position', elem[2] )
+    training.addData('globalTime', round(time.clock(),4))
+    
     
     #declaramos el SOA, un intervalo de tiempo entre 1 y 2 segundos que usaremos para la pantalla de fixation
     timeFixation = random.uniform(1,2)
@@ -345,7 +348,8 @@ for trial in training:
             miu3.writeRegister(DAC1_REGISTER, intensityLabjackFix)
         else :
             miu3.writeRegister(DAC1_REGISTER, 0)
-                
+        if 'q' in event.getKeys():
+            core.quit()
         solar_cellFixation.draw()
         targetWhiteCircle.draw()
         redJoystickButton.draw()
@@ -386,8 +390,9 @@ for trial in training:
     respClock = core.Clock()
     #print(reactionTime)
     
-    #print(elem)
-    while respClock.getTime() < targetOnSet :
+    hayColision = 0
+        
+    while respClock.getTime() < targetOnSet and hayColision == 0:
         
         if respClock.getTime() < tiempoEsperaU3Cue :
             miu3.writeRegister(DAC1_REGISTER, u3TargetVolts)
@@ -416,7 +421,7 @@ for trial in training:
         distancia = distance.euclidean([nuevoX,nuevoY],[0,0])
         
         
-        distances = [distance.euclidean(lx,[0,0]) for lx in listaTargets]
+        
         
         
         
@@ -446,12 +451,13 @@ for trial in training:
             theta = angle( nuevoX+nuevoY*1j )
             nuevoXMax = math.cos(theta)*5
             nuevoYMax = math.sin(theta)*5
-            redJoystickButton.setPos((nuevoXMax, nuevoYMax))
-            redJoystickButton.draw()
+#            redJoystickButton.setPos((nuevoXMax, nuevoYMax))
+#            redJoystickButton.draw()
             
         if isMax ==1 :
             redJoystickButton.setPos((nuevoXMax, nuevoYMax))
             redJoystickButton.draw()
+            hayColision = 1
             
         
         mywin.flip()
@@ -472,25 +478,35 @@ for trial in training:
     training.addData('angleInDegrees',angD)
     
     
-    if ang > 0 and ang <=0.05:
-        ang = 0.05
     
     #aqui debemos escribir ang en la u3 que vale 0 si no se ha movido joy y 0.05 a 3.14 si se tiene algo de error
     
+    if angD == 404:
+        valorAmandarP0 = 0
+    else :
+        valorAmandarP0 = round(listaIntensities[int(round(angD,0))],3)
     
     cont = 0
     respClock= core.Clock()
     
     while respClock.getTime() < interstimulusInterval :
-        if angD < 10 :
+        if hayColision and angD < 5 :
             while cont < 20:
                 for item in range(numCircles):
                     circle = visual.Circle(mywin, radius=0.20, edges=10, fillColor = 'white', pos=[itemtoAddFinal[0] + x[item]*listMoves[cont],itemtoAddFinal[1] + y[item]*listMoves[cont]], interpolate= True)
                     circle.draw()
+                if respClock.getTime() < tiempoEsperaU3Cue :
+                    miu3.writeRegister(DAC0_REGISTER, valorAmandarP0)
+                else :
+                    miu3.writeRegister(DAC0_REGISTER, 0)
                 cont = cont+1
                 mywin.flip()
+        else : 
+            if respClock.getTime() < tiempoEsperaU3Cue :
+                miu3.writeRegister(DAC0_REGISTER, valorAmandarP0)
+            else :
+                miu3.writeRegister(DAC0_REGISTER, 0)
         
-
         if 'p' in event.getKeys():
             pausa = 1
             event.clearEvents()
@@ -502,7 +518,7 @@ for trial in training:
             mywin.flip()
         if 'q' in event.getKeys():
             core.quit()
-        if angD < 10 :
+        if hayColision and angD < 5 :
             if cont == 20:
                 mywin.flip()
                 lista = [round(360*random.random(),4) for i in xrange(numCircles)]
@@ -514,14 +530,12 @@ for trial in training:
                 listMoves = [0] * 20
                 elemental = 0
                 while elemental < 20 :
-                    listMoves[elemental] = elemental*0.15
+                    listMoves[elemental] = elemental*0.3
                     elemental = elemental + 1
                 cont = cont + 1
             
             
         mywin.flip()
-        
-        
     
     event.clearEvents()
     exp.nextEntry()

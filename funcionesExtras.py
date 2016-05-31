@@ -7,7 +7,7 @@ def angleInRads(pt1, pt2):
     x1, y1 = pt1
     x2, y2 = pt2
     if x2 == 0.0 and y2 == 0.0:
-        return 0
+        return 404
     inner_product = x1*x2 + y1*y2
     len1 = math.hypot(x1, y1)
     len2 = math.hypot(x2, y2)
@@ -17,7 +17,7 @@ def angleInRads(pt1, pt2):
 def angleInDegrees(pt, pt2):
     x2, y2 = pt2
     if x2 == 0.0 and y2 == 0.0:
-        return 0
+        return 404
     angleDeg = angleInRads(pt, pt2)*180/math.pi
     return round(angleDeg,3)
 

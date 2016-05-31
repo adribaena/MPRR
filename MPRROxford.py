@@ -253,6 +253,7 @@ exp.addLoop(training)
 voyPor = 0
 pausa = 0
 
+dummy = time.clock()
 #para cada vez que hemos escrito en nuestro numero de trials
 for trial in training:
     
@@ -326,8 +327,7 @@ for trial in training:
     training.addData('typeTrial',typeTrial)
     training.addData('Unceartinty type', elem[0])
     training.addData('sector', elem[1])
-    training.addData('position', elem[2] )
-    training.addData('globalTime', round(time.clock(),4))
+    training.addData('position', elem[2])
     
     
     #declaramos el SOA, un intervalo de tiempo entre 1 y 2 segundos que usaremos para la pantalla de fixation
@@ -537,6 +537,7 @@ for trial in training:
             
         mywin.flip()
     
+    training.addData('globalTime', round(time.clock(),4))
     event.clearEvents()
     exp.nextEntry()
 

@@ -5,6 +5,7 @@ from psychopy.hardware import joystick
 from scipy.spatial import distance
 from numpy import angle
 import math
+from labjack import u3
 import numpy as np
 import time
 
@@ -51,7 +52,14 @@ intensityU3TargetNoUniform = [1.7, 1.65 , 1.6]
 # la aceleracion que se usa mas abajo para mover el Joystick
 
 
+miu3 = u3.U3()
+miu3.getCalibrationData
 
+DAC1_REGISTER = 5002
+miu3.writeRegister(DAC1_REGISTER,0)
+
+DAC0_REGISTER = 5000
+miu3.writeRegister(DAC0_REGISTER, 0)
 
 
 
@@ -84,9 +92,9 @@ for i in range(len(lista)):
 
 
 #define the movement vector of every circle
-listMoves = [0] * 20
+listMoves = [0] * 10
 elemental = 0
-while elemental < 20 :
+while elemental < 10 :
     listMoves[elemental] = elemental*0.3
     elemental = elemental + 1
 
@@ -165,20 +173,6 @@ mywin = visual.Window([1366,768], fullscr = False, monitor='testMonitor', color=
 respClock = core.Clock()
 
 
-valor = int(info['Subject'])
-
-if valor < 10 : 
-    
-    print ('mola')
-    elemento = '0' + str(info['Subject'])
-else :
-    elemento = str(info['Subject'])
-    print ('no mola')
-    
-filename = 'data/'+ elemento +'_Psydat'
-
-
-
 joystick.backend='pyglet'
 nJoysticks=joystick.getNumJoysticks()
 
@@ -194,8 +188,8 @@ else:
 
 solar_cellFixation = visual.Circle(mywin, radius=0.5, edges=30, fillColor = 'white', opacity = opacidades[0], pos=[-14,7.5], interpolate= True)
 
-solar_cellHigh_reg = visual.Circle(mywin, radius=0.5, edges=30, fillColor = 'white', opacity = opacidades[3], pos=[-14,7.5], interpolate= True)
-solar_cellHigh_nreg = visual.Circle(mywin, radius=0.5, edges=30, fillColor = 'white', opacity = opacidades[6], pos=[-14,7.5], interpolate= True)
+solar_cellHigh_reg = visual.Circle(mywin, radius=0.5, edges=30, fillColor = 'white', opacity = opacidades[5], pos=[-14,7.5], interpolate= True)
+solar_cellHigh_nreg = visual.Circle(mywin, radius=0.5, edges=30, fillColor = 'white', opacity = opacidades[8], pos=[-14,7.5], interpolate= True)
 
 
 solar_cellCueRegular = visual.Circle(mywin, radius=0.5, edges=30, fillColor = 'white', opacity = opacidades[1], pos=[-14,7.5], interpolate= True)
@@ -206,8 +200,8 @@ solar_cellCueNoRegular = visual.Circle(mywin, radius=0.5, edges=30, fillColor = 
 solar_cellMedium_reg = visual.Circle(mywin, radius=0.5, edges=30, fillColor = 'white', opacity = opacidades[4], pos=[-14,7.5], interpolate= True)
 solar_cellMedium_nreg = visual.Circle(mywin, radius=0.5, edges=30, fillColor = 'white', opacity = opacidades[7], pos=[-14,7.5], interpolate= True)
 
-solar_cellNoCert_reg = visual.Circle(mywin, radius=0.5, edges=30, fillColor = 'white', opacity = opacidades[5], pos=[-14,7.5], interpolate= True)
-solar_cellNoCert_nreg = visual.Circle(mywin, radius=0.5, edges=30, fillColor = 'white', opacity = opacidades[8], pos=[-14,7.5], interpolate= True)
+solar_cellNoCert_reg = visual.Circle(mywin, radius=0.5, edges=30, fillColor = 'white', opacity = opacidades[3], pos=[-14,7.5], interpolate= True)
+solar_cellNoCert_nreg = visual.Circle(mywin, radius=0.5, edges=30, fillColor = 'white', opacity = opacidades[6], pos=[-14,7.5], interpolate= True)
 
 #solar_celltarget = visual.Circle(mywin, radius=0.5, edges=30, lineColor = 'white',fillColor = 'white', opacity = opacidades[7], pos=[-14,7.5], interpolate= True)
 #preparamos la celula del punto de fijacion, de color blanco, y la cruz del punto de fijacion
@@ -233,7 +227,15 @@ targetFinal = visual.Circle(mywin, radius=0.5, edges=30,lineColor = 'white', fil
 
 
 
+valor = int(info['Subject'])
+if valor < 10 : 
 
+    elemento = '0' + str(info['Subject'])
+else :
+    elemento = str(info['Subject'])
+    
+    
+filename = 'data/'+ 'Sub' + elemento +'_Psydat'
 
 exp = data.ExperimentHandler(name='MprrSubject',
                 version='0.1',
@@ -503,7 +505,7 @@ for trial in training:
     
     while respClock.getTime() < interstimulusInterval :
         if hayColision and angD < 5 :
-            while cont < 20:
+            while cont < 10:
                 for item in range(numCircles):
                     circle = visual.Circle(mywin, radius=0.20, edges=10, fillColor = 'white', pos=[itemtoAddFinal[0] + x[item]*listMoves[cont],itemtoAddFinal[1] + y[item]*listMoves[cont]], interpolate= True)
                     circle.draw()
@@ -531,7 +533,7 @@ for trial in training:
         if 'q' in event.getKeys():
             core.quit()
         if hayColision and angD < 5 :
-            if cont == 20:
+            if cont == 10:
                 mywin.flip()
                 lista = [round(360*random.random(),4) for i in xrange(numCircles)]
                 x = [0] * numCircles
@@ -539,9 +541,9 @@ for trial in training:
                 for i in range(len(lista)):
                     x[i]= np.cos(math.radians(lista[i]))*2
                     y[i]= np.sin(math.radians(lista[i]))*2
-                listMoves = [0] * 20
+                listMoves = [0] * 10
                 elemental = 0
-                while elemental < 20 :
+                while elemental < 10 :
                     listMoves[elemental] = elemental*0.3
                     elemental = elemental + 1
                 cont = cont + 1

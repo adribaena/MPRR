@@ -8,6 +8,7 @@ import math
 from labjack import u3
 import numpy as np
 import time
+import random
 
 
 
@@ -139,12 +140,9 @@ while heTerminado > 0 :
 
 
 
-bloque1 = listaFinal[0 : 72]
-bloque2 = listaFinal[72 : 144]
-bloque3 = listaFinal[144 : 216]
-bloque4 = listaFinal[216 : 288]
+bloque = listaFinal[0 : 45]
 
-listatypeTrial = [0,'U','NU']
+listatypeTrial = ['U','NU']
 
 
 
@@ -227,18 +225,9 @@ targetFinal = visual.Circle(mywin, radius=0.5, edges=30,lineColor = 'white', fil
 
 
 
+filename = 'data/'+'Sub'+str(info['Subject'])+'_Test'
 
-valor = (info['Subject'])
-
-if valor < 10 : 
-    elemento = '0' + str(info['Subject'])
-else :
-    elemento = str(info['Subject'])
-    
-    
-filename = 'data/'+ elemento +'_Psydat'
-
-exp = data.ExperimentHandler(name='MprrSubject',
+exp = data.ExperimentHandler(name='MprrSubjectTest',
                 version='0.1',
                 extraInfo=info,
                 runtimeInfo=None,
@@ -249,7 +238,7 @@ exp = data.ExperimentHandler(name='MprrSubject',
                
 
 
-numeroReps = len(listaFinal)
+numeroReps = len(bloque)
 
 training = data.TrialHandler(trialList=[], nReps=numeroReps, name='train', method='sequential')
 
@@ -257,8 +246,10 @@ training = data.TrialHandler(trialList=[], nReps=numeroReps, name='train', metho
 exp.addLoop(training)
 
 
+texto = 'Test Block is going to start, press space to continue'
 voyPor = 0
 pausa = 0
+continuar = 0
 
 dummy = time.clock()
 #para cada vez que hemos escrito en nuestro numero de trials
@@ -274,38 +265,26 @@ for trial in training:
         event.clearEvents()
         
         
+    reloj2 = core.Clock()
+    while continuar == 0  :
+        if reloj2.getTime() < 0.3 :
+            miu3.writeRegister(DAC0_REGISTER, 0.04)
+        elif reloj2.getTime() > 0.3 and reloj2.getTime() < 0.6 :
+            miu3.writeRegister(DAC0_REGISTER, 1)
+        elif reloj2.getTime() > 0.6 and reloj2.getTime() < 0.9 :
+            miu3.writeRegister(DAC0_REGISTER, 2)
+        elif reloj2.getTime() > 0.9 :  
+            miu3.writeRegister(DAC0_REGISTER, 0)
+            stim = visual.TextStim(mywin, texto)
+            stim.draw()
+            mywin.flip()
+            if 'space' in event.getKeys():
+                continuar = 1
+            event.clearEvents()
     
-    if voyPor % 72 == 0 :
-        
-        bloque = str((voyPor // 72) + 1)
-        
-        texto = 'Block  ' + bloque + ' is going to start, press space to continue'
-        continuar = 0
-        
-        reloj2 = core.Clock()
-        while continuar == 0  :
-            
-            if reloj2.getTime() < 0.3 :
-                miu3.writeRegister(DAC0_REGISTER, 0.04)
-            elif reloj2.getTime() > 0.3 and reloj2.getTime() < 0.6 :
-                miu3.writeRegister(DAC0_REGISTER, 1)
-            elif reloj2.getTime() > 0.6 and reloj2.getTime() < 0.9 :
-                miu3.writeRegister(DAC0_REGISTER, 2)
-            elif reloj2.getTime() > 0.9 :  
-                miu3.writeRegister(DAC0_REGISTER, 0)
-                stim = visual.TextStim(mywin, texto)
-                stim.draw()
-                mywin.flip()
-                if 'space' in event.getKeys():
-                    continuar = 1
-                event.clearEvents()
-        
-
-        
-        
-    listatypeTrial = funcionesExtras.testPseudoRandom(listatypeTrial)
     
-    typeTrial = listatypeTrial[0]
+    
+    typeTrial = random.choice(listatypeTrial)
     elem = listaFinal[voyPor]
     
     
@@ -377,17 +356,14 @@ for trial in training:
     #print (elem)
     #second target 
     
-    
-    
-    
     respClock = core.Clock()
     while respClock.getTime() < cuetime:
         
-        if respClock.getTime() > 0.5 :
-            if respClock.getTime() < tiempoEsperaU3Cue + 0.5:
-                miu3.writeRegister(DAC1_REGISTER, valU3)
-            else :
-                miu3.writeRegister(DAC1_REGISTER, 0)
+
+        if respClock.getTime() < tiempoEsperaU3Cue :
+            miu3.writeRegister(DAC1_REGISTER, valU3)
+        else :
+            miu3.writeRegister(DAC1_REGISTER, 0)
         
         solarCue.draw()
         if respClock.getTime() > timeInSecondsOfCueShown:
@@ -413,7 +389,7 @@ for trial in training:
         
     while respClock.getTime() < targetOnSet and hayColision == 0:
         
-        if respClock.getTime() < tiempoEsperaU3Cue :
+        if respClock.getTime() < tiempoEsperaU3Cue:
             miu3.writeRegister(DAC1_REGISTER, u3TargetVolts)
         else :
             miu3.writeRegister(DAC1_REGISTER, 0)
@@ -555,8 +531,9 @@ for trial in training:
             
             
         mywin.flip()
-    voyPor = voyPor + 1
+    
     training.addData('globalTime', round(time.clock(),4))
+    voyPor = voyPor + 1
     event.clearEvents()
     exp.nextEntry()
 

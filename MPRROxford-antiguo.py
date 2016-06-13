@@ -5,7 +5,6 @@ from psychopy.hardware import joystick
 from scipy.spatial import distance
 from numpy import angle
 import math
-from labjack import u3
 import numpy as np
 import time
 
@@ -52,14 +51,7 @@ intensityU3TargetNoUniform = [1.7, 1.65 , 1.6]
 # la aceleracion que se usa mas abajo para mover el Joystick
 
 
-miu3 = u3.U3()
-miu3.getCalibrationData
 
-DAC1_REGISTER = 5002
-miu3.writeRegister(DAC1_REGISTER,0)
-
-DAC0_REGISTER = 5000
-miu3.writeRegister(DAC0_REGISTER, 0)
 
 
 
@@ -173,6 +165,20 @@ mywin = visual.Window([1366,768], fullscr = False, monitor='testMonitor', color=
 respClock = core.Clock()
 
 
+valor = int(info['Subject'])
+
+if valor < 10 : 
+    
+    print ('mola')
+    elemento = '0' + str(info['Subject'])
+else :
+    elemento = str(info['Subject'])
+    print ('no mola')
+    
+filename = 'data/'+ elemento +'_Psydat'
+
+
+
 joystick.backend='pyglet'
 nJoysticks=joystick.getNumJoysticks()
 
@@ -228,15 +234,6 @@ targetFinal = visual.Circle(mywin, radius=0.5, edges=30,lineColor = 'white', fil
 
 
 
-valor = (info['Subject'])
-
-if valor < 10 : 
-    elemento = '0' + str(info['Subject'])
-else :
-    elemento = str(info['Subject'])
-    
-    
-filename = 'data/'+ elemento +'_Psydat'
 
 exp = data.ExperimentHandler(name='MprrSubject',
                 version='0.1',
@@ -300,7 +297,7 @@ for trial in training:
                     continuar = 1
                 event.clearEvents()
         
-
+    voyPor = voyPor + 1
         
         
     listatypeTrial = funcionesExtras.testPseudoRandom(listatypeTrial)
@@ -377,17 +374,13 @@ for trial in training:
     #print (elem)
     #second target 
     
-    
-    
-    
     respClock = core.Clock()
     while respClock.getTime() < cuetime:
         
-        if respClock.getTime() > 0.5 :
-            if respClock.getTime() < tiempoEsperaU3Cue + 0.5:
-                miu3.writeRegister(DAC1_REGISTER, valU3)
-            else :
-                miu3.writeRegister(DAC1_REGISTER, 0)
+        if respClock.getTime() < tiempoEsperaU3Cue :
+            miu3.writeRegister(DAC1_REGISTER, valU3)
+        else :
+            miu3.writeRegister(DAC1_REGISTER, 0)
         
         solarCue.draw()
         if respClock.getTime() > timeInSecondsOfCueShown:
@@ -555,7 +548,7 @@ for trial in training:
             
             
         mywin.flip()
-    voyPor = voyPor + 1
+    
     training.addData('globalTime', round(time.clock(),4))
     event.clearEvents()
     exp.nextEntry()

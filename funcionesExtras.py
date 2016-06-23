@@ -37,54 +37,35 @@ def testPseudoRandom(lista):
     
 
 
-def obtenerposicionesTarget(elem):
+def obtenerposicionesTarget(elem, angleDist):
     
     cue_type = elem[0]
     sector = elem[1]
     position_target = elem[2]
     
     listaFin = []
-    distance = 5 * math.sin(math.pi/4)
-    distance=round(distance,2)
-    listaFinCert = [(0,5),(distance,distance),(5,0),(distance, -distance),(0,-5),(-distance, -distance),(-5,0),(-distance,distance)]
+    listaFinCert = [0, 45, 90, 135, 180, 225, 270, 315]
     
-    distanceX60N = 5 * math.cos(math.pi/6)
-    distanceX60N=round(distanceX60N,2)
-    
-    distanceY60N = 5 * math.sin(math.pi/6)
-    distanceY60N=round(distanceY60N,2)
-    
-    distanceX60E = 5 * math.cos(math.pi/3)
-    distanceX60E=round(distanceX60E,2)
-    
-    distanceY60E = 5 * math.sin(math.pi/3)
-    distanceY60E=round(distanceY60E,2)
-    
-    distanceX60S = 5 * math.cos(-math.pi/6)
-    distanceX60S = round(distanceX60S,2)
-    
-    distanceY60S = 5 * math.sin(-math.pi/6)
-    distanceY60S=round(distanceY60S,2)
-    
-    distanceX60W = 5 * math.cos((4* math.pi)/6)
-    distanceX60W=round(distanceX60W,2)
-    
-    distanceY60W = 5 * math.sin((4* math.pi)/6)
-    distanceY60W =round(distanceY60W,2)
-
     if cue_type == 'H':
         listaFin = listaFinCert
     elif cue_type == 'M' :
         if sector == 'N':
-            listaFin = [(-distanceX60N,distanceY60N),(0,5),(distanceX60N,distanceY60N)]
+            listaFin = [150, 90, 30]
         elif sector == 'E':
-            listaFin = [(distanceX60E,distanceY60E),(5,0),(distanceX60E,-distanceY60E)]
+            listaFin = [60, 0, 300]
         elif sector == 'S':
-            listaFin = [(-distanceX60S,distanceY60S),(0,-5),(distanceX60S,distanceY60S)]
+            listaFin = [210, 270,330]
         else :
-            listaFin = [(distanceX60W,-distanceY60W),(-5,0),(distanceX60W,distanceY60W)]
+            listaFin = [240, 180, 120]
     elif cue_type == 'N':
         listaFin = [listaFinCert[int(position_target)]]
+    for i in range(len(listaFin)) :
+        ang = listaFin[i] + angleDist
+        distorsion = ang/float(180)
+        distorsion = distorsion * math.pi
+        x = (5 * math.cos(distorsion), 5* math.sin(distorsion))
+        
+        listaFin[i] = x
     
     return listaFin
     

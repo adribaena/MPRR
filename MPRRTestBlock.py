@@ -15,7 +15,7 @@ import time
 
 
 # se giran todos los circulos 5 grados en sentido de las agujas del reloj por lo que se les restan 5 grados
-angleDist = -18
+angleDist = -15
 
 # el tiempo en segundos durante el que se escribe un valor en DAC1_REGISTER durante el cue 
 
@@ -111,12 +111,20 @@ listaIntensities = np.linspace(0.04, 2.0, num=181)
 globalTime = core.Clock()
 
 
+listaCues = ['U','NU']
+lc = funcionesExtras.darPrimeraLista(listaCues, 6)
+
+lAux = [random.choice(lc),random.choice(lc)]
+
+listaCFin = []
 
 
 
 listNone = list(csv.reader(open('conditionsNone.csv',"rU")))[1:]
 listMedium = list(csv.reader(open('conditionsMedium.csv',"rU")))[1:]
 listHigh = list(csv.reader(open('conditionsHigh.csv',"rU")))[1:]
+
+
 
 listNone = listNone *3
 listMedium = listMedium * 2
@@ -127,14 +135,22 @@ lista = listNone + listMedium + listHigh
 
 listaFinal = []
 
+#print lista
 
 total = 4
 heTerminado = total
-
+twoLast = lAux
 while heTerminado > 0 :
     
-    random.shuffle(lista)
-    listaFinal = listaFinal + lista
+    #random.shuffle(lista)
+    lCompleted, twoLast = funcionesExtras.darListaCompleta(lc, twoLast, 6)
+    #print('lCompleted', lCompleted)
+    lFinal = funcionesExtras.crearlistaFinal (lista, lCompleted)
+    #print('lista : ', lista,'---')
+    #print(lFinal)
+    #print('bloque :', 5 - heTerminado)
+    lista2 = [lista[i] + [lCompleted[i]] for i in range(len(lista))]
+    listaFinal = listaFinal + lFinal
     heTerminado = heTerminado - 1
     
 
@@ -145,6 +161,17 @@ bloque2 = listaFinal[72 : 144]
 bloque3 = listaFinal[144 : 216]
 bloque4 = listaFinal[216 : 288]
 
+#print (bloque1)
+#print (' ::: -- :::')
+#
+#print (bloque2)
+#print (' ::: -- :::')
+#
+#print (bloque3)
+#print (' ::: -- :::')
+#
+#print (bloque4)
+#print (' ::: -- :::')
 listatypeTrial = [0,'U','NU']
 
 
@@ -237,7 +264,7 @@ else :
     elemento = str(info['Subject'])
     
     
-filename = 'data/'+ 'Sub' + elemento +'_Psydat'+'_Pract'
+filename = 'data/'+ 'Sub' + elemento +'_Psydat'
 
 exp = data.ExperimentHandler(name='MprrSubject',
                 version='0.1',
@@ -250,8 +277,7 @@ exp = data.ExperimentHandler(name='MprrSubject',
                
 
 
-bloque = listaFinal[0 : 45]
-numeroReps = len(bloque)
+numeroReps = 45
 
 training = data.TrialHandler(trialList=[], nReps=numeroReps, name='train', method='sequential')
 
@@ -279,8 +305,9 @@ for trial in training:
 
     if voyPor % 72 == 0 :
         
+        bloque = str((voyPor // 72) + 1)
         
-        texto = 'Block Test is going to start, press space to continue'
+        texto = 'Block  ' + bloque + ' is going to start, press space to continue'
         continuar = 0
         
         reloj2 = core.Clock()
@@ -301,6 +328,7 @@ for trial in training:
                     continuar = 1
                 event.clearEvents()
         
+
         
         
     listatypeTrial = funcionesExtras.testPseudoRandom(listatypeTrial)
@@ -308,6 +336,7 @@ for trial in training:
     typeTrial = listatypeTrial[0]
     elem = listaFinal[voyPor]
     
+    typeTrial = elem[3]
     
     if typeTrial == 'U' :
         myList = intensitylabJackUniform

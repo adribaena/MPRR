@@ -13,6 +13,22 @@ def angleInRads(pt1, pt2):
     len2 = math.hypot(x2, y2)
     return round(math.acos(inner_product/(len1*len2)),3)
 
+def crearlistaFinal (lista, lCues) :
+    lst = {'U': [], 'NU': []}
+    for i in [i for i,x in enumerate(lCues) if x == 'U']:
+        lst['U'] = lst['U'] + [i] 
+    for i in [i for i,x in enumerate(lCues) if x == 'NU']:
+        lst['NU'] = lst['NU'] + [i]
+        
+    listaCues = ['U','NU']
+    for i in range(72) : 
+        item = listaCues[i % 2]
+        dummyTrial = random.choice(lst[item])
+        lst[item].remove(dummyTrial)
+        lCues[dummyTrial] = lista[i] + [lCues[dummyTrial]]
+    return lCues
+    
+
 
 def angleInDegrees(pt, pt2):
     x2, y2 = pt2
@@ -20,6 +36,46 @@ def angleInDegrees(pt, pt2):
         return 404
     angleDeg = angleInRads(pt, pt2)*180/math.pi
     return round(angleDeg,3)
+
+def darPrimeraLista (lista, n) : 
+    listaF = []
+    for i in range(n):
+        listaF = listaF + lista
+    return listaF
+
+
+def esPseudoRandom(lista) :
+    
+    res = True
+    for i in range(len(lista)-2) : 
+        if lista[i] == lista[i+1] and lista[i+1] == lista[i+2] :
+            res = False
+            break
+    return res 
+    
+def darListaCompleta(lc, lAux, n):
+    
+    listaCFin = []
+    for i in range(n):
+        lc, lAux = darSiguientePseudoRandom(lc, lAux)
+        listaCFin = listaCFin + lc
+    return listaCFin, [listaCFin[len(listaCFin)-2], listaCFin[len(listaCFin)-1]]
+
+
+def darSiguientePseudoRandom(lista, anteriores):
+    random.shuffle(lista)
+    anterioresIguales = 0
+    if anteriores[0] == anteriores[1]:
+        anterioresIguales = anteriores[0]
+    anterioresIguales = anterioresIguales == lista[0] and anterioresIguales == lista[1]
+    
+    while anterioresIguales == 1 or esPseudoRandom(lista) == False : 
+        random.shuffle(lista)
+        anterioresIguales1 = anteriores[1] == lista[0] and anteriores[1] == lista[1]
+        anterioresIguales2 = anteriores[0] == anteriores[1] and anteriores[1] == lista[0]
+        anterioresIguales = anterioresIguales1 or anterioresIguales2
+        
+    return lista, [lista[len(lista)-2], lista[len(lista)-1]]
 
 
 def testPseudoRandom(lista):

@@ -1,6 +1,0 @@
-train.thisRepN,train.thisTrialN,train.thisN,train.thisIndex,train.thisTrial,Labjack_U3,cellIntensity,typeTrial,Unceartinty type,sector,position,soa,reactionTime,joyFinalPos,TargetFinalPosition,angleInRads,angleInDegrees,globalTime,gender,Session,dateStr,Subject,
-0,0,0,0,None,0.4,0.5,U,M,W,0,1.9,0.4,"(-2.97, -4.022)","(-3.716, -3.346)",0.202,11.574,12.2979,male,3,2016_jun_23_1249,3,
-1,0,1,0,None,0.8,0.9,NU,M,N,1,1.6,0.418,"(1.817, 4.658)","(1.545, 4.755)",0.058,3.323,19.0308,male,3,2016_jun_23_1249,3,
-2,0,2,0,None,0.4,0.5,U,M,S,0,1.7,0.467,"(-4.989, -0.335)","(-4.891, -1.04)",0.142,8.136,25.9322,male,3,2016_jun_23_1249,3,
-3,0,3,0,None,0.35,0.4,U,N,0,2,1.6,0.351,"(2.179, 4.5)","(1.545, 4.755)",0.137,7.85,32.6326,male,3,2016_jun_23_1249,3,
-4,0,4,0,None,0.8,0.9,NU,M,S,2,1.2,0.434,"(3.095, -3.927)","(3.346, -3.716)",0.066,3.782,38.9824,male,3,2016_jun_23_1249,3,
